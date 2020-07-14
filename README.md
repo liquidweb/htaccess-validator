@@ -31,7 +31,7 @@ The `bin/validate-htaccess` script accepts a configuration file for validation:
 $ bin/validate-htaccess /path/to/some/file.conf
 ```
 
-The script will return a non-zero exit code if validation errors were detected. Individual codes are documented in the script's header](bin/validate-htaccess#L15)
+The script will return a non-zero exit code if validation errors were detected. [Individual codes are documented in the script's header](bin/validate-htaccess#L15).
 
 ### Validating Apache2 configurations within a PHP script
 
