@@ -23,9 +23,12 @@ class Validator
 	 */
 	public function __construct($file)
 	{
-		$this->file       = (string) $file;
+		$this->file = (string) $file;
 	}
 
+    /**
+     * Automatically remove temporary files as script execution ends.
+     */
 	public function __destruct()
 	{
 		if ($this->isTempFile) {
@@ -108,7 +111,7 @@ class Validator
 	}
 
 	/**
-	 * Create a new validator instance using a stream.
+	 * Create a new validator instance using a temporary file.
 	 *
 	 * @return self
 	 */
