@@ -27,10 +27,24 @@
 file=${1:?No configuration file specified.}
 
 # Ensure that httpd is available.
-if ! command -v httpd &> /dev/null; then
-    echo 'Unable to find the httpd binary, is Apache2 installed?' 1>&2
+if [ ! command -v httpd &> /dev/null ] && [! command -v apache2ctl &> /dev/null ] ; then
+    echo 'Unable to find the httpd binary or apache2ctl script, is Apache2 installed?' 1>&2
     exit 2
 fi
+
+command -v httpd &> /dev/null
+exit_code=$?
+
+if [ $exit_code -eq 0 ]; then
+    httpd="httpd"
+fi;
+
+command -v apache2ctl &> /dev/null
+exit_code=$?
+
+if [ $exit_code -eq 0 ]; then
+    httpd="apache2ctl"
+fi;
 
 # Verify the given file actually exists.
 if [ ! -f "$file" ]; then
@@ -40,14 +54,14 @@ fi
 
 # Verify that the current configuration passes; if it doesn't, it won't
 # magically be fixed by throwing more on top of it.
-if ! httpd -t -C "ServerName example.com" 2> /dev/null; then
+if [ ! ${httpd} -t -C 'ServerName example.com' 2> /dev/null ]; then
     echo "The current Apache environment is misconfigured.
 Please resolve these issues before attempting to validate ${file}." 1>&2
     exit 4
 fi
 
 # Get the name of the current configuration file.
-current_config=$(httpd -V \
+current_config=$(${httpd} -V \
     | grep -E -o -e 'SERVER_CONFIG_FILE="(.+)"' \
     | sed 's/SERVER_CONFIG_FILE=//; s/"//g')
 
@@ -57,7 +71,7 @@ cat "$file" > "$tmpfile"
 
 # Now, use Apache to validate itself, injecting $FILE into the current
 # server environment.
-results=$(httpd -t -C "Include ${current_config}" -f "$tmpfile" -C "ServerName example.com" 2>&1)
+results=$(${httpd} -t -C "Include ${current_config}" -f "$tmpfile" -C "ServerName example.com" 2>&1)
 exit_code=$?
 
 # Remove the temp file.

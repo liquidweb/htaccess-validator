@@ -93,15 +93,17 @@ class Validator
 
 		$process = proc_open($command, $descriptors, $pipes);
 
-        if (! is_resource($process)) {
-            throw new ValidationException('Unable to open validation process.');
-        }
+		if (! is_resource($process)) {
+			throw new ValidationException('Unable to open validation process.');
+		}
 
-        $exitCode = proc_close($process);
+		$errorMessage = stream_get_contents($pipes[2]);
+		fclose($pipes[2]);
+		$exitCode = proc_close($process);
 
 		if (0 !== $exitCode) {
 			throw new ValidationException(
-				sprintf('Validation errors were encountered: %s', $pipes[2]),
+				sprintf('Validation errors were encountered: %s', $errorMessage),
 				$exitCode
 			);
 		}
