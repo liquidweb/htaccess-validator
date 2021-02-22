@@ -61,13 +61,8 @@ EOT );
      */
     protected function validateHtaccess(string $file): object
     {
-        $script = dirname(__DIR__) . '/bin/validate-htaccess';
-
-        if (! is_executable($script)) {
-            throw new \RuntimeException(sprintf('%s is not executable, aborting.', $script));
-        }
-
-        $run = exec(escapeshellcmd($script . ' ' . escapeshellarg($file) ) . ' 2>&1', $output, $exitCode);
+        $cmd = dirname(__DIR__) . '/bin/validate-htaccess ' . escapeshellarg($file);
+        $run = exec(escapeshellcmd('bash ' . $cmd). ' 2>&1', $output, $exitCode);
 
         if (false === $run) {
             throw new \RuntimeException('Unable to run the validate-htaccess script.');
