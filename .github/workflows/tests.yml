@@ -24,17 +24,18 @@ jobs:
     strategy:
       matrix:
         # macOS uses httpd, so it'll be our proxy to CentOS/RHEL/Fedora.
-        os: ['ubuntu-20.04', 'macos-latest']
+        os: ['ubuntu-20.04', 'ubuntu-18.04', 'macos-latest']
       fail-fast: false
     runs-on: ${{ matrix.os }}
-
-    # Temporary: don't let the failing unit tests on Ubuntu fail the workflow.
-    # This will be addressed in a separate, follow-up PR.
-    continue-on-error: true
 
     steps:
       - name: Checkout
         uses: actions/checkout@v1
+
+      # Invoke Apache once as root to ensure that /var/run/apache2 gets created
+      - name: Set up the Apache process
+        if: runner.os == 'Linux'
+        run: sudo apachectl -t -C 'ServerName example.com' -D DUMP_VHOSTS
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
