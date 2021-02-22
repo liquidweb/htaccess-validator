@@ -9,6 +9,10 @@
             "homepage": "https://stevegrunwell.com"
         }
     ],
+    "support": {
+        "issues": "https://github.com/liquidweb/htaccess-validator/issues",
+        "source": "https://github.com/liquidweb/htaccess-validator"
+    },
     "minimum-stability": "stable",
     "require-dev": {
         "phpunit/phpunit": "^9.5"
