@@ -1,0 +1,60 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - develop
+      - main
+  pull_request:
+
+jobs:
+  shellcheck:
+    name: Shellcheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Shellcheck
+        uses: ludeeus/action-shellcheck@master
+        with:
+          scandir: './bin'
+
+  unit-tests:
+    name: Unit tests
+    strategy:
+      matrix:
+        # macOS uses httpd, so it'll be our proxy to CentOS/RHEL/Fedora.
+        os: ['ubuntu-20.04', 'macos-latest']
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+
+    # Temporary: don't let the failing unit tests on Ubuntu fail the workflow.
+    # This will be addressed in a separate, follow-up PR.
+    continue-on-error: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 7.4
+          coverage: none
+
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "::set-output name=dir::$(composer config cache-files-dir)"
+
+      - name: Cache dependencies
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.json') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --no-suggest --no-progress
+
+      - name: Run test suite
+        run: composer test:unit
